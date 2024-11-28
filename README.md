@@ -11,6 +11,11 @@ What I've done so far:
   
 ## Customize Postgres MCP Server
 
+Customizations done:
+- Support multiple databases and hence multiple SQL tools. By default it's not possible since postgres MCP always names the tool "query".
+- In the tool description add the DB schema so that Claude doesn't hallucinate / retry all the time.
+  
+Running:
 - The `index.ts` file contains the modified server. It won't compile as-is, you have to:
 - Clone the original repo: https://github.com/modelcontextprotocol/servers
 - Replace the `src/postgres/index.ts` file in there with the `index.ts` file here.
