@@ -35,3 +35,18 @@ I put this in my `~/Library/Application Support/Claude/claude_desktop_config.jso
 }
 ```
 
+## Example user journey
+
+Prompt: who are my most pain in the butt customers relative to the value they add? So use the revenue they generate divided by the amount of support tickets they create
+
+Claude thread: https://claude.ai/share/39f8c24c-7b48-4397-aca9-eac30346fc53
+
+TLDR:
+- gets some data. the top-5 list is not sorted correctly, makes me question the accuracy.
+- Check against promptql, claude looks wrong.
+- Ask claude to give a full list as markdown
+- List contains missing users
+- Ask claude if it is complete
+- Claude gives a more complete list but still missing 1 user
+
+Comparison Sheet: https://docs.google.com/spreadsheets/d/1yoLWc6RRbK0OsICe0LGotDuAJ6l-yPrZp_i-fZogdyM/edit?gid=0#gid=0
