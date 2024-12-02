@@ -175,6 +175,17 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
         },
       },
+      {
+        name: "execute_python_program",
+        description: `Run a python program and also pass a data value argument that can be loaded in the program as the first command line argument`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            pythonCode: { type: "string"},
+            dataValues: { type: "string", description: "stringified json of data"}
+          },
+        },
+      }
     ],
   };
 });
@@ -208,6 +219,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       client.release();
     }
   }
+
+  if (request.params.name === "execute_python_program") {
+    const pythonCode = request.params.arguments?.pythonCode as string;
+    const dataVals = request.params.arguments?.dataValues as string;
+    const resultStruct = await executePythonCode(pythonCode, dataVals);
+    return {
+        content: [{type: "text", text: resultStruct.stdout + '\n\n' + resultStruct.stderr}],
+        isError: resultStruct.stderr != ''
+      }
+  }
   throw new Error(`Unknown tool: ${request.params.name}`);
 });
 
@@ -222,3 +243,93 @@ const support_schema = await getDatabaseSchema(supportTicketsPool, "table_name L
 console.log(cp_schema)
 console.log(support_schema)
 runServer().catch(console.error);
+
+
+// 
+
+import { spawn } from 'child_process';
+import { promises as fs } from 'fs';
+import { join } from 'path';
+import { tmpdir } from 'os';
+
+interface PythonExecutionResult {
+  stdout: string;
+  stderr: string;
+  exitCode: number;
+}
+
+
+
+export async function executePythonCode(pythonCode: string, dataValues: string): Promise<PythonExecutionResult> {
+  // Create a temporary file to store the Python code
+  const tempFile = join(tmpdir(), `temp_${Date.now()}.py`);
+  
+  try {
+    // Write the Python code to the temporary file
+    await fs.writeFile(tempFile, pythonCode, 'utf8');
+    
+    // Execute the Python script
+    const result = await new Promise<PythonExecutionResult>((resolve, reject) => {
+      const pythonProcess = spawn('python3', [tempFile, dataValues]);
+      
+      let stdout = '';
+      let stderr = '';
+      
+      pythonProcess.stdout.on('data', (data) => {
+        stdout += data.toString();
+      });
+      
+      pythonProcess.stderr.on('data', (data) => {
+        stderr += data.toString();
+      });
+      
+      pythonProcess.on('close', (code) => {
+        resolve({
+          stdout,
+          stderr,
+          exitCode: code ?? -1
+        });
+      });
+      
+      pythonProcess.on('error', (err) => {
+        reject(new Error(`Failed to execute Python code: ${err.message}`));
+      });
+    });
+    
+    return result;
+    
+  } finally {
+    // Clean up: delete the temporary file
+    try {
+      await fs.unlink(tempFile);
+    } catch (err) {
+      console.error('Failed to delete temporary file:', err);
+    }
+  }
+}
+
+// Example usage
+async function main() {
+  const pythonCode = `
+print("Hello from Python!")
+x = 10 + 20
+print(f"Result: {x}")
+`;
+
+  try {
+    const result = await executePythonCode(pythonCode, "[]");
+    
+    if (result.exitCode === 0) {
+      console.log('Execution successful!');
+      console.log('Output:', result.stdout);
+    } else {
+      console.error('Execution failed!');
+      console.error('Error:', result.stderr);
+    }
+  } catch (err) {
+    console.error('Failed to execute Python code:', err);
+  }
+}
+
+// Call main function if you want to run the example
+// main().catch(console.error);
