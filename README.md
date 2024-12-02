@@ -1,8 +1,7 @@
 # mcp-vs-promptql
 
-What I've done so far:
 
-## Split customer support DB into 2
+## Prepare data
 
 - Go to `split_db` directory.
 - Create two postgres DBs at localhost:5432 - `control_plane_fake` and `support_tickets_fake`.
@@ -14,6 +13,7 @@ What I've done so far:
 Customizations done:
 - Support multiple databases and hence multiple SQL tools. By default it's not possible since postgres MCP always names the tool "query".
 - In the tool description add the DB schema so that Claude doesn't hallucinate / retry all the time.
+- Add python tool
   
 Running:
 - The `index.ts` file contains the modified server. It won't compile as-is, you have to:
@@ -25,7 +25,9 @@ Running:
 
 ## Claude Desktop config
 
-I put this in my `~/Library/Application Support/Claude/claude_desktop_config.json` on Mac:
+Use MCP instructions here: https://modelcontextprotocol.io/quickstart and modify the configuration like below:
+
+Put this in `~/Library/Application Support/Claude/claude_desktop_config.json` on Mac:
 
 ```json
 {
