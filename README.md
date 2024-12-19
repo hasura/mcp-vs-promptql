@@ -18,6 +18,7 @@ Running:
 - The `index.ts` file contains the modified server. It won't compile as-is, you have to:
 - Clone the original repo: https://github.com/modelcontextprotocol/servers
 - Replace the `src/postgres/index.ts` file in there with the `index.ts` file here.
+- Set the DB URLs correctly in `controlPlaneUrl` and `supportTicketsUrl` variables in the file.
 - Then in that directory run:
     - `npx tsc`
     - Optional: Run `node dist/index.js` to verify the server starts up fine.
